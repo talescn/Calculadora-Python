@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Python</title>
+    <style>
+        :root {
+            --color-background: #fcfcf9;
+            --color-surface: #fffffd;
+            --color-text: #13343b;
+            --color-text-secondary: #626c71;
+            --color-primary: #21808d;
+            --color-primary-hover: #1d7480;
+            --color-primary-active: #1a6873;
+            --color-secondary: rgba(94, 82, 64, 0.12);
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-card-border: rgba(94, 82, 64, 0.12);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            --radius-lg: 12px;
+            --radius-base: 8px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-background: #1f2121;
+                --color-surface: #262828;
+                --color-text: #f5f5f5;
+                --color-text-secondary: rgba(167, 169, 169, 0.7);
+                --color-primary: #32b8c6;
+                --color-primary-hover: #2da6b2;
+                --color-primary-active: #2996a1;
+                --color-secondary: rgba(119, 124, 124, 0.15);
+                --color-border: rgba(119, 124, 124, 0.3);
+                --color-card-border: rgba(119, 124, 124, 0.2);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .calculator {
+            background-color: var(--color-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-card-border);
+            box-shadow: var(--shadow-lg);
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .calculator-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .calculator-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .status {
+            text-align: center;
+            font-size: 12px;
+            color: var(--color-primary);
+            margin-top: -8px;
+            margin-bottom: 16px;
+        }
+
+        .display {
+            background-color: var(--color-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+        }
+
+        .expression {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            margin-bottom: 8px;
+            min-height: 20px;
+            word-break: break-all;
+        }
+
+        .result {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--color-text);
+            word-break: break-all;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .button {
+            background-color: var(--color-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--color-text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .button:hover {
+            background-color: var(--color-primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.operator {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .button.operator:hover {
+            background-color: var(--color-primary-hover);
+        }
+
+        .button.equals {
+            background-color: var(--color-primary);
+            color: white;
+            grid-column: span 2;
+        }
+
+        .button.equals:hover {
+            background-color: var(--color-primary-active);
+        }
+
+        .button.clear {
+            background-color: rgba(192, 21, 47, 0.15);
+            color: #c0152f;
+            border-color: rgba(192, 21, 47, 0.25);
+        }
+
+        .button.clear:hover {
+            background-color: #c0152f;
+            color: white;
+        }
+
+        .button.function {
+            font-size: 14px;
+            padding: 15px 10px;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 16px;
+            }
+
+            .button {
+                padding: 16px;
+                font-size: 16px;
+            }
+
+            .result {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="calculator-header">
+            <h1>Calculadora Python</h1>
+        </div>
+        <div class="status">Backend: Flask/Python</div>
+        
+        <div class="display">
+            <div class="expression" id="expression"></div>
+            <div class="result" id="result">0</div>
+        </div>
+        
+        <div class="buttons" id="buttons">
+            <button class="button clear" onclick="clearCalculator()">C</button>
+            <button class="button operator" onclick="setOperation('percentage')">%</button>
+            <button class="button function" onclick="calculateScientific('sqrt')">√</button>
+            <button class="button operator" onclick="setOperation('divide')">/</button>
+            
+            <button class="button function" onclick="calculateScientific('sin')">sin</button>
+            <button class="button function" onclick="calculateScientific('cos')">cos</button>
+            <button class="button function" onclick="calculateScientific('tan')">tan</button>
+            <button class="button operator" onclick="setOperation('multiply')">×</button>
+            
+            <button class="button" onclick="appendNumber('7')">7</button>
+            <button class="button" onclick="appendNumber('8')">8</button>
+            <button class="button" onclick="appendNumber('9')">9</button>
+            <button class="button operator" onclick="setOperation('subtract')">−</button>
+            
+            <button class="button" onclick="appendNumber('4')">4</button>
+            <button class="button" onclick="appendNumber('5')">5</button>
+            <button class="button" onclick="appendNumber('6')">6</button>
+            <button class="button operator" onclick="setOperation('add')">+</button>
+            
+            <button class="button" onclick="appendNumber('1')">1</button>
+            <button class="button" onclick="appendNumber('2')">2</button>
+            <button class="button" onclick="appendNumber('3')">3</button>
+            <button class="button operator" onclick="deleteLastChar()">←</button>
+            
+            <button class="button" onclick="appendNumber('0')">0</button>
+            <button class="button" onclick="appendNumber('.')">.</button>
+            <button class="button equals" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentValue = '0';
+        let storedValue = null;
+        let currentOperation = null;
+        let expression = '';
+
+        function updateDisplay() {
+            document.getElementById('expression').textContent = expression;
+            document.getElementById('result').textContent = currentValue;
+        }
+
+        function appendNumber(num) {
+            if (currentValue === '0' && num !== '.') {
+                currentValue = num;
+            } else if (currentValue === '0' && num === '.') {
+                currentValue = '0.';
+            } else {
+                if (num === '.' && currentValue.includes('.')) {
+                    return;
+                }
+                currentValue += num;
+            }
+            updateDisplay();
+        }
+
+        function setOperation(op) {
+            if (currentOperation && storedValue !== null) {
+                calculate();
+            }
+            storedValue = parseFloat(currentValue);
+            currentOperation = op;
+            
+            const opSymbols = {
+                'add': '+',
+                'subtract': '−',
+                'multiply': '×',
+                'divide': '/',
+                'percentage': '%'
+            };
+            expression = currentValue + ' ' + opSymbols[op] + ' ';
+            currentValue = '0';
+            updateDisplay();
+        }
+
+        async function calculate() {
+            if (!currentOperation || storedValue === null) return;
+
+            const buttons = document.getElementById('buttons');
+            buttons.classList.add('loading');
+
+            try {
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        operation: currentOperation,
+                        value1: storedValue,
+                        value2: currentValue
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    expression = expression + currentValue + ' =';
+                    currentValue = data.result.toString();
+                    updateDisplay();
+                    
+                    setTimeout(() => {
+                        storedValue = null;
+                        currentOperation = null;
+                        expression = '';
+                        updateDisplay();
+                    }, 1500);
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError('Erro de conexão');
+            } finally {
+                buttons.classList.remove('loading');
+            }
+        }
+
+        async function calculateScientific(func) {
+            const buttons = document.getElementById('buttons');
+            buttons.classList.add('loading');
+
+            try {
+                const value = parseFloat(currentValue);
+                const funcSymbols = {
+                    'sqrt': '√',
+                    'sin': 'sin',
+                    'cos': 'cos',
+                    'tan': 'tan'
+                };
+
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        operation: func,
+                        value1: value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (func === 'sqrt') {
+                        expression = `${funcSymbols[func]}(${value})`;
+                    } else {
+                        expression = `${funcSymbols[func]}(${value}°)`;
+                    }
+                    currentValue = data.result.toString();
+                    updateDisplay();
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError('Erro de conexão');
+            } finally {
+                buttons.classList.remove('loading');
+            }
+        }
+
+        function clearCalculator() {
+            currentValue = '0';
+            storedValue = null;
+            currentOperation = null;
+            expression = '';
+            updateDisplay();
+        }
+
+        function deleteLastChar() {
+            if (currentValue.length > 1) {
+                currentValue = currentValue.slice(0, -1);
+            } else {
+                currentValue = '0';
+            }
+            updateDisplay();
+        }
+
+        function showError(message) {
+            currentValue = message;
+            updateDisplay();
+            setTimeout(() => {
+                clearCalculator();
+            }, 2000);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key >= '0' && event.key <= '9') {
+                appendNumber(event.key);
+            } else if (event.key === '.') {
+                appendNumber('.');
+            } else if (event.key === '+') {
+                setOperation('add');
+            } else if (event.key === '-') {
+                setOperation('subtract');
+            } else if (event.key === '*') {
+                setOperation('multiply');
+            } else if (event.key === '/') {
+                event.preventDefault();
+                setOperation('divide');
+            } else if (event.key === 'Enter' || event.key === '=') {
+                calculate();
+            } else if (event.key === 'Escape' || event.key === 'c' || event.key === 'C') {
+                clearCalculator();
+            } else if (event.key === 'Backspace') {
+                deleteLastChar();
+            }
+        });
+
+        updateDisplay();
+    </script>
+</body>
+</html>
